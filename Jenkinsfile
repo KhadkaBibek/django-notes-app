@@ -1,27 +1,37 @@
-@Library('Shared')_
-pipeline{
-    agent { label 'dev-server'}
-    
-    stages{
-        stage("Code clone"){
+@Library("Shared") _
+
+pipeline {
+    agent any
+
+    stages {
+        stage("Hello"){
             steps{
+                script{
+                    hello()
+                }
+            }
+        }
+        stage('Code') {
+            steps {
+                echo "This is cloning the project"
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/KhadkaBibek/django-notes-app.git']])
+               
                 
-            clone("https://github.com/LondheShubham153/django-notes-app.git","main")
             }
         }
-        stage("Code Build"){
-            steps{
-            dockerbuild("notes-app","latest")
+        stage('Build') {
+            steps {
+                echo "This is building the project"
+                sh "docker build -t notes-app:latest ."
+                
             }
         }
-        stage("Push to DockerHub"){
-            steps{
-                dockerpush("dockerHubCreds","notes-app","latest")
-            }
-        }
-        stage("Deploy"){
-            steps{
-                deploy()
+        stage('Push to DockerHub') {
+            steps {
+                
+                script{
+                    docker_push("notes-app","latest","khadkabibek4")
+                }
             }
         }
         
